@@ -1,33 +1,25 @@
 ### 1. 立即执行函数和拓展运算符的综合用法
 通过立即执行函数和拓展运算符，可以有效的简化操作方法。
 
+背景：获取列表的请求参数 systemFields 的处理，当有搜索条件的时候，如 searchValue ，可能需要单独处理一下。
+
+但是通过立即执行函数，把请求参数的逻辑聚拢在一起了，然后在将结果解构出来，如果没有搜索值的话，systemFields数组就不添加新的内容，如果有搜索值的话，就将返回的数组对象解构出来变成对象插入到 systemFields的数组里面去。
 
 
-解释说明：
+代码如下：
 ```js
-let reqParams = {
-            systemFields: [
-              { field: "locationCode", value: [res.code], type: "text", method: "like"},
-              { field: "type", value: ['0'], type: "text", method: "like"},
-              ...(()=> {
-                if(!this.materialData.replaceIds) return [
-                  { field: "materialId", value: [this.materialData.materialId], type: "text", method: "like"}
-                ]
-
-                if(this.materialData.replaceIds && typeof this.materialData.replaceIds === 'string') {
-                  const replaceIds = this.materialData.replaceIds.split(',')
-                  if(this.materialData.materialId) {
-                   replaceIds.push(String(this.materialData.materialId))
-                  }
-                  return [
-                    { field: "materialId", value: replaceIds, type: "text", method: "in"},
-                  ]
-                }
-                 
-              })()
-
-            ]
-				  }
+let reqParams ={
+ current: 1,
+ size: 20,
+ sort: [{  field: "createTime",  mode: this.sortMode}],
+ systemFields: [ 
+{ field: 'isNegative', value: [0], type: "text", method: "in"},
+...(()=> {
+    if(!this.searchValue) return []
+    return [{ field: 'keyword', value: [this.searchValue], type: "text", method: "in"}]
+ })(),
+            
+}
 ```
 
 
